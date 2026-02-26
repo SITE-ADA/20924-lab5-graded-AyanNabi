@@ -150,10 +150,10 @@ public class EventController {
     @PatchMapping("/{id}/price")
     public ResponseEntity<?> updatePrice(
             @PathVariable("id") UUID eventId,
-            @RequestParam("price") double price) {
+            @RequestParam("price") BigDecimal price) {
         try {
-            boolean updated = eventService.updateEventPrice(eventId, price);
-            if (updated) {
+            Event updated = eventService.updateEventPrice(eventId, price);
+            if (updated!=null) {
                 return ResponseEntity.ok("Price updated successfully.");
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found.");
