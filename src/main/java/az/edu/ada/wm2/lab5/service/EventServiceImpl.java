@@ -1,5 +1,5 @@
 package az.edu.ada.wm2.lab5.service;
-
+import javax.persistence.EntityNotFoundException;
 import az.edu.ada.wm2.lab5.model.Event;
 import az.edu.ada.wm2.lab5.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +8,12 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
-    getEventsByTag
-            getUpcomingEvents
-    getEventsByPriceRange
-            getEventsByDateRange
-    updateEventPrice
 
     private final EventRepository eventRepository;
 
@@ -98,8 +94,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getUpcomingEvents() {
-        return List.of();
+        LocalDateTime now = LocalDateTime.now();
+        return eventRepository.findAll().stream()
+                .filter(p -> p.getEventDateTime().isAfter(now))
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public List<Event> getEventsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
@@ -130,14 +130,12 @@ public class EventServiceImpl implements EventService {
         throw new RuntimeException("error");
     }
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Event not found with id: " + id));
+                .orElseThrow((null));
 
         event.setTicketPrice(newPrice);
         return eventRepository.save(event);
 
 
-
-        return null;
     }
 
 }
