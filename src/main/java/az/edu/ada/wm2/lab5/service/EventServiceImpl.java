@@ -1,5 +1,4 @@
 package az.edu.ada.wm2.lab5.service;
-import javax.persistence.EntityNotFoundException;
 import az.edu.ada.wm2.lab5.model.Event;
 import az.edu.ada.wm2.lab5.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
