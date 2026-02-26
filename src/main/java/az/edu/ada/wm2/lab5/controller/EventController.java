@@ -3,10 +3,14 @@ package az.edu.ada.wm2.lab5.controller;
 import az.edu.ada.wm2.lab5.model.Event;
 import az.edu.ada.wm2.lab5.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +46,7 @@ public class EventController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     // 3. GET ONE BY ID - GET /api/events/{id}
     @GetMapping("/{id}")
@@ -94,5 +99,70 @@ public class EventController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+
+    @GetMapping("/filter/date")
+    public ResponseEntity<?> filterByDate(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        try {
+            List<Event> events = eventService.getEventsByDateRange(start, end);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid date range or internal error.");
+        }
+    }
+
+    @GetMapping("/filter/price")
+    public ResponseEntity<?> filterByPrice(
+            @RequestParam("min") BigDecimal min,
+            @RequestParam("max") BigDecimal max) {
+        try {
+            List<Event> events = eventService.getEventsByPriceRange(min, max);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid price range or internal error.");
+        }
+    }
+
+    @GetMapping("/filter/tag")
+    public ResponseEntity<?> filterByTag(@RequestParam("tag") String tag) {
+        try {
+            List<Event> events = eventService.getEventsByTag(tag);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error filtering events by tag.");
+        }
+    }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity<?> getUpcomingEvents() {
+        try {
+            List<Event> events = eventService.getUpcomingEvents();
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching upcoming events.");
+        }
+    }
+
+    @PatchMapping("/{id}/price")
+    public ResponseEntity<?> updatePrice(
+            @PathVariable("id") UUID eventId,
+            @RequestParam("price") BigDecimal price) {
+        try {
+            Event updated = eventService.updateEventPrice(eventId, price);
+            return ResponseEntity.ok(updated); // return updated event
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid price.");
+        } catch (RuntimeException e) { // Event not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating price.");
+        }
+    }
+
 
 }
