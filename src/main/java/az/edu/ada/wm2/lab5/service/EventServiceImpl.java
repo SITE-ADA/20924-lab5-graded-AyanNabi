@@ -13,6 +13,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
+    getEventsByTag
+            getUpcomingEvents
+    getEventsByPriceRange
+            getEventsByDateRange
+    updateEventPrice
 
     private final EventRepository eventRepository;
 
@@ -85,6 +90,9 @@ public class EventServiceImpl implements EventService {
     // Custom methods
     @Override
     public List<Event> getEventsByTag(String tag) {
+        eventRepository.findAll().stream()
+                .filter(event -> event.getTags().contains(tag))
+                .collect(Collectors.toList());
         return List.of();
     }
 
@@ -95,16 +103,40 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getEventsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-       return List.of();
+        return eventRepository.findAll().stream()
+                .filter(p -> p.getTicketPrice() != null &&
+                        p.getTicketPrice().compareTo(minPrice) >= 0 &&
+                        p.getTicketPrice().compareTo(maxPrice) <= 0)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Event> getEventsByDateRange(LocalDateTime start, LocalDateTime end) {
-        return List.of();
+        return eventRepository.findAll().stream()
+                .filter(event -> {
+                    LocalDateTime eventTime = event.getEventDateTime();
+                    boolean isOnOrAfterStart = !eventTime.isBefore(start);
+                    boolean isOnOrBeforeEnd = !eventTime.isAfter(end);
+                    return isOnOrAfterStart && isOnOrBeforeEnd;
+                })
+                .collect(Collectors.toList());
+
+
     }
 
     @Override
     public Event updateEventPrice(UUID id, BigDecimal newPrice) {
+    if (!eventRepository.existsById(id)){
+        throw new RuntimeException("error");
+    }
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found with id: " + id));
+
+        event.setTicketPrice(newPrice);
+        return eventRepository.save(event);
+
+
+
         return null;
     }
 
