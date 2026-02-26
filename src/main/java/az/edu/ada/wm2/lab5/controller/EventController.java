@@ -153,20 +153,16 @@ public class EventController {
             @RequestParam("price") BigDecimal price) {
         try {
             Event updated = eventService.updateEventPrice(eventId, price);
-            if (updated!=null) {
-                return ResponseEntity.ok("Price updated successfully.");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found.");
-            }
+            return ResponseEntity.ok(updated); // return updated event
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Invalid price.");
+        } catch (RuntimeException e) { // Event not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while updating price.");
         }
     }
-
-
 
 
 }
